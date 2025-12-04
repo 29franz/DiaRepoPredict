@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<!-- templates/index.html -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction Tool | Machine Learning Model</title>
+    <meta name="description" content="Predict diabetes risk using logistic regression machine learning model">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --low-risk-color: #10b981;
+            --moderate-risk-color: #f59e0b;
+            --high-risk-color: #ef4444;
+            --background-light: #f8fafc;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Skip to main content link for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary-color);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            text-decoration: none;
+            z-index: 1001;
+        }
+
+        .skip-link:focus {
+            top: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-2px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: var(--background-light);
+            padding: 25px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar h2 {
+            color: var(--text-primary);
+            margin-bottom: 25px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover, .nav-btn:focus {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateX(5px);
+            outline: none;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-btn i {
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 35px;
+            /* overflow-y: auto; */
+            /* max-height: 700px; */
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+            /* overflow: auto; */
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .tab-description {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 1.05rem;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .required {
+            color: var(--danger-color);
+            font-size: 1.2em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input:hover {
+            border-color: #9ca3af;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+            color: white;
+        }
+
+        /* Result Container */
+        .result-container {
+            margin-top: 35px;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .result-high {
+            border-color: var(--high-risk-color);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%);
+        }
+
+        .result-moderate {
+            border-color: var(--moderate-risk-color);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%);
+        }
+
+        .result-low {
+            border-color: var(--low-risk-color);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.05) 100%);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .result-high .result-icon {
+            color: var(--high-risk-color);
+            border: 3px solid var(--high-risk-color);
+        }
+
+        .result-moderate .result-icon {
+            color: var(--moderate-risk-color);
+            border: 3px solid var(--moderate-risk-color);
+        }
+
+        .result-low .result-icon {
+            color: var(--low-risk-color);
+            border: 3px solid var(--low-risk-color);
+        }
+
+        .result-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .result-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .detail-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Risk Meter */
+        .risk-meter {
+            margin: 25px 0;
+        }
+
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .meter-bar {
+            height: 20px;
+            background: linear-gradient(to right, var(--low-risk-color), var(--moderate-risk-color), var(--high-risk-color));
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .meter-indicator {
+            position: absolute;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: white;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        /* Batch Prediction Styles */
+        .upload-area {
+            border: 3px dashed var(--primary-color);
+            border-radius: 12px;
+            padding: 50px 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--background-light);
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--secondary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area.drag-over {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .selected-file {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .selected-file.show {
+            display: block;
+        }
+
+        /* Statistics Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Results Table */
+        .results-table-container {
+            margin: 30px 0;
+            overflow: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            width: 850px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 18px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .results-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .results-table tbody tr:hover {
+            background: var(--background-light);
+        }
+
+        .results-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Risk Badges */
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .risk-badge.high {
+            background: linear-gradient(135deg, var(--high-risk-color) 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .risk-badge.moderate {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+            color: white;
+        }
+
+        .risk-badge.low {
+            background: linear-gradient(135deg, var(--low-risk-color) 0%, #059669 100%);
+            color: white;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        /* Success Message */
+        .success-message {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            .content-area {
+                max-height: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content-area {
+                padding: 25px 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .result-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        *:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .container {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            
+            .sidebar, .btn {
+                display: none;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <div class="container" role="main">
+        <div class="header" role="banner">
+            <h1>Logistic Regression Approach in Predicting Diabetes Malignancy</h1>
+            <p>Predict the likelihood of diabetes using machine learning</p>
+        </div>
+        
+        <div class="main-content">
+            <nav class="sidebar" aria-label="Prediction modes">
+                <h2><i class="fas fa-sliders-h"></i> Prediction Mode</h2>
+                <button class="nav-btn active" onclick="showTab('single')" id="singleTabBtn" aria-label="Switch to single prediction mode" aria-current="true">
+                    <i class="fas fa-user-md"></i> Single Prediction
+                </button>
+                <button class="nav-btn" onclick="showTab('batch')" id="batchTabBtn" aria-label="Switch to batch prediction mode">
+                    <i class="fas fa-users"></i> Batch Prediction
+                </button>
+            </nav>
+            
+            <div class="content-area" id="main-content">
+                <!-- Single Prediction Tab -->
+                <div id="single-tab" class="tab-content active" role="tabpanel" aria-labelledby="singleTabBtn">
+                    <h1 class="tab-title">Single Patient Prediction</h1>
+                    <p class="tab-description">Enter patient details to predict individual diabetes risk</p>
+                    
+                    <form id="predictionForm" aria-label="Single prediction form">
+                        <div class="form-grid">
+                            <!-- Form fields with accessibility attributes -->
+                            <div class="form-group">
+                                <label for="Pregnancies" class="form-label">
+                                    <i class="fas fa-baby"></i> Pregnancies
+                                    <span class="required" aria-hidden="true">*</span>
+                                </label>
+                                <input type="number" id="Pregnancies" name="Pregnancies" 
+                                       class="form-input" min="0" max="20" step="1" 
+                                       value="0" required aria-required="true"
+                                       aria-describedby="pregnanciesHelp">
+                                <small id="pregnanciesHelp" class="form-help">
+                                    Number of pregnancies (0-15)
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="Glucose" class="form-label">
+                                    <i class="fas fa-tint"></i> Glucose
+                                    <span class="required" aria-hidden="true">*</span>
+                                </label>
+                                <input type="number" id="Glucose" name="Glucose" 
+                                       class="form-input" min="0" max="300" step="1" 
+                                       value="120" required aria-required="true"
+                                       aria-describedby="glucoseHelp">
+                                <small id="glucoseHelp" class="form-help">
+                                    Glucose concentration in mg/dL (0-380)
+                                </small>
+                            </div>
+                            
+                            <!-- Add remaining form fields with similar structure -->
+                            <div class="form-group">
+                                <label for="BloodPressure" class="form-label">
+                                    <i class="fas fa-heartbeat"></i> Blood Pressure
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number" id="BloodPressure" name="BloodPressure" 
+                                       class="form-input" min="0" max="150" step="1" 
+                                       value="70" required aria-describedby="bpHelp">
+                                <small id="bpHelp" class="form-help">Blood pressure in mm Hg (0-150)</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="SkinThickness" class="form-label">
+                                    <i class="fas fa-ruler"></i> Skin Thickness
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number" id="SkinThickness" name="SkinThickness" 
+                                       class="form-input" min="0" max="100" step="1" 
+                                       value="20" required aria-describedby="skinHelp">
+                                <small id="skinHelp" class="form-help">Skin thickness in mm (0-100)</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="Insulin" class="form-label">
+                                    <i class="fas fa-syringe"></i> Insulin
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number" id="Insulin" name="Insulin" 
+                                       class="form-input" min="0" max="900" step="1" 
+                                       value="80" required aria-describedby="insulinHelp">
+                                <small id="insulinHelp" class="form-help">Insulin level in mu U/ml (0-900)</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="BMI" class="form-label">
+                                    <i class="fas fa-weight"></i> BMI
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number" id="BMI" name="BMI" 
+                                       class="form-input" min="0" max="70" step="0.1" 
+                                       value="25.0" required aria-describedby="bmiHelp">
+                                <small id="bmiHelp" class="form-help">Body Mass Index (0-40)</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="DiabetesPedigreeFunction" class="form-label">
+                                    <i class="fas fa-dna"></i> Diabetes Pedigree Function
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number" id="DiabetesPedigreeFunction" name="DiabetesPedigreeFunction" 
+                                       class="form-input" min="0" max="10" step="1" 
+                                       value="0" required aria-describedby="dpfHelp">
+                                <small id="dpfHelp" class="form-help">
+                                    Genetic risk score - whole number (0-10)
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="Age" class="form-label">
+                                    <i class="fas fa-birthday-cake"></i> Age
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number" id="Age" name="Age" 
+                                       class="form-input" min="0" max="120" step="1" 
+                                       value="30" required aria-describedby="ageHelp">
+                                <small id="ageHelp" class="form-help">Age in years (0-120)</small>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-stethoscope"></i> Predict Diabetes Risk
+                        </button>
+                        
+                        <button type="button" class="btn" style="margin-top: 15px; background: #e5e7eb; color: #4b5563;" onclick="resetButton()">
+                            <i class="fas fa-redo"></i> Reset Form
+                        </button>
+                    </form>
+                    
+                    <div id="single-loading" class="loading" role="alert" aria-live="polite">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <p class="loading-text">Analyzing patient data...</p>
+                    </div>
+                    
+                    <div id="singleResultContainer" class="result-container" role="region" aria-live="polite">
+                        <!-- Results will be inserted here -->
+                    </div>
+                </div>
+                
+                <!-- Batch Prediction Tab -->
+                <div id="batch-tab" class="tab-content" role="tabpanel" aria-labelledby="batchTabBtn" hidden>
+                    <h1 class="tab-title">Batch Prediction</h1>
+                    <p class="tab-description">Upload a CSV file with multiple patient records for batch processing</p>
+                    
+                    <div class="upload-area" id="uploadArea" role="region" aria-label="File upload area">
+                        <div class="upload-icon" aria-hidden="true">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3 style="margin-bottom: 15px;">📁 Upload CSV File</h3>
+                        <p style="margin-bottom: 25px;">Upload a CSV file with the following columns:<br>
+                        <strong>Pregnancies, Glucose, BloodPressure, SkinThickness, Insulin, BMI, DiabetesPedigreeFunction, Age</strong></p>
+                        
+                        <input type="file" id="csvFile" class="file-input" 
+                               accept=".csv" aria-label="Choose CSV file"
+                               aria-describedby="fileUploadHelp">
+                        <label for="csvFile" class="file-label" tabindex="0">
+                            <i class="fas fa-file-csv"></i> Choose File
+                        </label>
+                        
+                        <p id="fileUploadHelp" class="form-help" style="margin-top: 20px;">
+                            Maximum file size: 10MB. File must be in CSV format.
+                        </p>
+                        
+                        <div id="selectedFile" class="selected-file" role="alert" aria-live="polite">
+                            <i class="fas fa-check-circle"></i> Selected file: 
+                            <strong id="fileName"></strong> (<span id="fileSize"></span>)
+                        </div>
+                    </div>
+                    
+                    <div class="button-group" style="display: flex; gap: 15px; margin-top: 25px;">
+                        <button onclick="processBatch()" class="btn btn-primary">
+                            <i class="fas fa-cogs"></i> Process Batch
+                        </button>
+                        <button onclick="clearBatch()" class="btn" style="background: #e5e7eb; color: #4b5563;">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                    
+                    <div id="batch-loading" class="loading" role="alert" aria-live="polite">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <p class="loading-text">Processing batch file...</p>
+                        <p id="progressText"></p>
+                    </div>
+                    
+                    <div id="successMessage" class="success-message" role="alert" aria-live="polite">
+                        <i class="fas fa-check-circle"></i> 
+                        <span id="successText">Batch processed successfully!</span>
+                    </div>
+                    
+                    <div id="batchResults" style="display: none;" role="region" aria-label="Batch prediction results">
+                        <h2 style="margin: 30px 0 20px 0;">Batch Prediction Results 
+                            <span id="recordCount" style="color: var(--primary-color);">0</span> records</h2>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalRecords">0</div>
+                                <div class="stat-label">Total Records</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="diabeticCount">0</div>
+                                <div class="stat-label">Diabetic</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="nonDiabeticCount">0</div>
+                                <div class="stat-label">Non-Diabetic</div>
+                            </div>
+                            <div class="stat-value" id="diabeticRate">0%</div>
+                                <div class="stat-label">Diabetic Rate</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="highRiskCount">0</div>
+                                <div class="stat-label">High Risk</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="moderateRiskCount">0</div>
+                                <div class="stat-label">Moderate Risk</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="lowRiskCount">0</div>
+                                <div class="stat-label">Low Risk</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 30px 0;">
+                            <button onclick="downloadResults()" class="btn btn-success">
+                                <i class="fas fa-download"></i> Download Results as CSV
+                            </button>
+                        </div>
+                        
+                        <h3 style="margin: 30px 0 20px 0;">Sample Results (first 10 records):</h3>
+                        
+                        <div class="results-table-container">
+                            <table class="results-table" aria-label="Sample batch prediction results">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Pregnancies</th>
+                                        <th scope="col">Glucose</th>
+                                        <th scope="col">Blood Pressure</th>
+                                        <th scope="col">Skin Thickness</th>
+                                        <th scope="col">Insulin</th>
+                                        <th scope="col">BMI</th>
+                                        <th scope="col">DPF</th>
+                                        <th scope="col">Age</th>
+                                        <th scope="col">Prediction</th>
+                                        <th scope="col">Probability</th>
+                                        <th scope="col">Risk Level</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sampleTableBody">
+                                    <!-- Sample rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentTab = 'single';
+        let batchResultsData = null;
+        
+        // Tab switching
+        function showTab(tabName) {
+            currentTab = tabName;
+            
+            // Update tab buttons
+            const singleBtn = document.getElementById('singleTabBtn');
+            const batchBtn = document.getElementById('batchTabBtn');
+            const singleTab = document.getElementById('single-tab');
+            const batchTab = document.getElementById('batch-tab');
+            
+            if (tabName === 'single') {
+                singleBtn.classList.add('active');
+                singleBtn.setAttribute('aria-current', 'true');
+                batchBtn.classList.remove('active');
+                batchBtn.removeAttribute('aria-current');
+                
+                singleTab.classList.add('active');
+                singleTab.removeAttribute('hidden');
+                batchTab.classList.remove('active');
+                batchTab.setAttribute('hidden', 'true');
+                
+                // Focus on first input in single prediction
+                setTimeout(() => document.getElementById('Pregnancies').focus(), 100);
+            } else {
+                batchBtn.classList.add('active');
+                batchBtn.setAttribute('aria-current', 'true');
+                singleBtn.classList.remove('active');
+                singleBtn.removeAttribute('aria-current');
+                
+                batchTab.classList.add('active');
+                batchTab.removeAttribute('hidden');
+                singleTab.classList.remove('active');
+                singleTab.setAttribute('hidden', 'true');
+                
+                // Focus on file input in batch prediction
+                setTimeout(() => document.getElementById('csvFile').focus(), 100);
+            }
+        }
+        
+        // Single Prediction
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            const loadingEl = document.getElementById('single-loading');
+            loadingEl.classList.add('show');
+            
+            // Hide previous results
+            const resultContainer = document.getElementById('singleResultContainer');
+            resultContainer.classList.remove('show');
+            
+            // Collect form data
+            const formData = {
+                Pregnancies: parseFloat(document.getElementById('Pregnancies').value),
+                Glucose: parseFloat(document.getElementById('Glucose').value),
+                BloodPressure: parseFloat(document.getElementById('BloodPressure').value),
+                SkinThickness: parseFloat(document.getElementById('SkinThickness').value),
+                Insulin: parseFloat(document.getElementById('Insulin').value),
+                BMI: parseFloat(document.getElementById('BMI').value),
+                DiabetesPedigreeFunction: parseFloat(document.getElementById('DiabetesPedigreeFunction').value),
+                Age: parseFloat(document.getElementById('Age').value)
+            };
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                // Hide loading
+                loadingEl.classList.remove('show');
+                
+                if (response.ok && result.success) {
+                    displaySingleResult(result);
+                } else {
+                    showError(result.error || 'Unknown error occurred');
+                }
+                
+            } catch (error) {
+                loadingEl.classList.remove('show');
+                showError('Error making prediction: ' + error.message);
+            }
+        });
+        
+        // Display single prediction result
+        function displaySingleResult(result) {
+            const container = document.getElementById('singleResultContainer');
+            
+            // Determine risk class and icon
+            let riskClass, riskIcon, riskText;
+            switch(result.risk_level) {
+                case 'High':
+                    riskClass = 'result-high';
+                    riskIcon = 'fa-exclamation-triangle';
+                    riskText = 'High Risk';
+                    break;
+                case 'Moderate':
+                    riskClass = 'result-moderate';
+                    riskIcon = 'fa-exclamation-circle';
+                    riskText = 'Moderate Risk';
+                    break;
+                case 'Low':
+                    riskClass = 'result-low';
+                    riskIcon = 'fa-check-circle';
+                    riskText = 'Low Risk';
+                    break;
+            }
+            
+            const riskPercentage = result.probability_percentage.toFixed(1);
+            
+            container.className = `result-container ${riskClass} show`;
+            container.innerHTML = `
+                <div class="result-header">
+                    <div class="result-icon" aria-hidden="true">
+                        <i class="fas ${riskIcon}"></i>
+                    </div>
+                    <div>
+                        <h2 class="result-title">${result.prediction_label} - ${riskText}</h2>
+                        <p class="result-subtitle">${result.detailed_message}</p>
+                    </div>
+                </div>
+                
+                <div class="result-details">
+                    <div class="detail-card">
+                        <div class="detail-label">Prediction</div>
+                        <div class="detail-value">${result.prediction_label}</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Risk Level</div>
+                        <div class="detail-value">${result.risk_level}</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Probability</div>
+                        <div class="detail-value">${riskPercentage}%</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Timestamp</div>
+                        <div class="detail-value">${result.timestamp}</div>
+                    </div>
+                </div>
+                
+                <div class="risk-meter">
+                    <div class="meter-labels">
+                        <span>Low Risk</span>
+                        <span>Moderate</span>
+                        <span>High Risk</span>
+                    </div>
+                    <div class="meter-bar">
+                        <div class="meter-indicator" style="left: ${Math.min(100, riskPercentage)}%"></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: #6b7280;">
+                        Risk Indicator: ${riskPercentage}% probability
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <h3 style="margin-bottom: 10px; color: #4b5563;">Recommendations:</h3>
+                    <ul style="padding-left: 20px;">
+                        ${getRecommendations(result.risk_level, riskPercentage)}
+                    </ul>
+                </div>
+            `;
+            
+            // Set focus to results for screen readers
+            container.setAttribute('tabindex', '-1');
+            container.focus();
+        }
+        
+        // Get recommendations based on risk level
+        function getRecommendations(riskLevel, percentage) {
+            const recommendations = {
+                'Low': [
+                    'Continue with regular health check-ups',
+                    'Maintain balanced diet and exercise routine',
+                    'Monitor glucose levels annually',
+                    'Stay hydrated and maintain healthy lifestyle'
+                ],
+                'Moderate': [
+                    'Consult with healthcare provider',
+                    'Increase frequency of glucose monitoring',
+                    'Consider lifestyle modifications',
+                    'Focus on weight management if needed'
+                ],
+                'High': [
+                    'Immediate consultation with healthcare provider recommended',
+                    'Regular glucose monitoring required',
+                    'Consider dietary and lifestyle changes',
+                    'Medical intervention may be necessary'
+                ]
+            };
+            
+            return recommendations[riskLevel]
+                .map(rec => `<li>${rec}</li>`)
+                .join('');
+        }
+        
+        // File upload handling
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const selectedFile = document.getElementById('selectedFile');
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatFileSize(file.size);
+                selectedFile.classList.add('show');
+                
+                // Announce to screen readers
+                announceToScreenReader(`File selected: ${file.name}, size: ${formatFileSize(file.size)}`);
+            }
+        });
+        
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                document.getElementById('csvFile').files = e.dataTransfer.files;
+                document.getElementById('csvFile').dispatchEvent(new Event('change'));
+            } else {
+                showError('Please drop a CSV file only');
+            }
+        });
+        
+        // Batch Prediction
+        async function processBatch() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showError('Please select a CSV file first.');
+                return;
+            }
+            
+            // Show loading
+            const loadingEl = document.getElementById('batch-loading');
+            const successMsg = document.getElementById('successMessage');
+            loadingEl.classList.add('show');
+            successMsg.classList.remove('show');
+            document.getElementById('batchResults').style.display = 'none';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/batch_predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                // Hide loading
+                loadingEl.classList.remove('show');
+                
+                if (response.ok && result.success) {
+                    batchResultsData = result;
+                    displayBatchResults(result);
+                    
+                    // Show success message
+                    document.getElementById('successText').textContent = result.message;
+                    successMsg.classList.add('show');
+                    
+                    // Announce to screen readers
+                    announceToScreenReader(`Batch processed successfully. ${result.count} records analyzed.`);
+                } else {
+                    showError(result.error || 'Failed to process batch file');
+                }
+                
+            } catch (error) {
+                loadingEl.classList.remove('show');
+                showError('Error processing batch: ' + error.message);
+            }
+        }
+        
+        // Display batch results
+        function displayBatchResults(result) {
+            // Update statistics
+            document.getElementById('recordCount').textContent = result.count;
+            document.getElementById('totalRecords').textContent = result.count;
+            document.getElementById('diabeticCount').textContent = result.diabetic_count;
+            document.getElementById('nonDiabeticCount').textContent = result.non_diabetic_count;
+            document.getElementById('diabeticRate').textContent = result.diabetic_rate.toFixed(1) + '%';
+            
+            // Update risk distribution
+            document.getElementById('highRiskCount').textContent = result.risk_distribution.High;
+            document.getElementById('moderateRiskCount').textContent = result.risk_distribution.Moderate;
+            document.getElementById('lowRiskCount').textContent = result.risk_distribution.Low;
+            
+            // Populate sample table
+            const tableBody = document.getElementById('sampleTableBody');
+            tableBody.innerHTML = '';
+            
+            result.sample_data.forEach((record, index) => {
+                const row = document.createElement('tr');
+                
+                // Get risk badge
+                let riskBadgeClass = '';
+                let riskIcon = '';
+                switch(record.Risk_Level) {
+                    case 'High':
+                        riskBadgeClass = 'high';
+                        riskIcon = 'fa-exclamation-triangle';
+                        break;
+                    case 'Moderate':
+                        riskBadgeClass = 'moderate';
+                        riskIcon = 'fa-exclamation-circle';
+                        break;
+                    case 'Low':
+                        riskBadgeClass = 'low';
+                        riskIcon = 'fa-check-circle';
+                        break;
+                }
+                
+                row.innerHTML = `
+                    <td>${record.Pregnancies}</td>
+                    <td>${record.Glucose}</td>
+                    <td>${record.BloodPressure}</td>
+                    <td>${record.SkinThickness}</td>
+                    <td>${record.Insulin}</td>
+                    <td>${record.BMI.toFixed(1)}</td>
+                    <td>${record.DiabetesPedigreeFunction}</td>
+                    <td>${record.Age}</td>
+                    <td>
+                        <span class="risk-badge ${record.Prediction === 1 ? 'high' : 'low'}">
+                            <i class="fas ${record.Prediction === 1 ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+                            ${record.Prediction_Label}
+                        </span>
+                    </td>
+                    <td><strong>${record.Probability_Percentage.toFixed(2)}%</strong></td>
+                    <td>
+                        <span class="risk-badge ${riskBadgeClass}">
+                            <i class="fas ${riskIcon}"></i>
+                            ${record.Risk_Level}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Show results section
+            document.getElementById('batchResults').style.display = 'block';
+            
+            // Focus on download button for easy access
+            setTimeout(() => {
+                const downloadBtn = document.querySelector('.btn-success');
+                if (downloadBtn) downloadBtn.focus();
+            }, 100);
+        }
+        
+        // Download Results
+        async function downloadResults() {
+            if (!batchResultsData) {
+                showError('No results to download. Please process a batch file first.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/download_results', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        csv_data: batchResultsData.csv_data,
+                        filename: batchResultsData.filename
+                    })
+                });
+                
+                if (response.ok) {
+                    // Create download link
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = batchResultsData.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    // Announce to screen readers
+                    announceToScreenReader('Download started. File will be saved as ' + batchResultsData.filename);
+                } else {
+                    const error = await response.json();
+                    showError('Error downloading: ' + (error.error || 'Unknown error'));
+                }
+                
+            } catch (error) {
+                showError('Error downloading results: ' + error.message);
+            }
+        }
+        
+        // Clear batch data
+        function clearBatch() {
+            document.getElementById('csvFile').value = '';
+            document.getElementById('selectedFile').classList.remove('show');
+            document.getElementById('batchResults').style.display = 'none';
+            document.getElementById('successMessage').classList.remove('show');
+            batchResultsData = null;
+            
+            announceToScreenReader('Batch data cleared');
+        }
+        
+        // Helper function to format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Show error message
+        function showError(message) {
+            alert('Error: ' + message);
+            announceToScreenReader('Error: ' + message);
+        }
+        
+        // Announce to screen readers
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.style.position = 'absolute';
+            announcement.style.left = '-9999px';
+            announcement.textContent = message;
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+        
+        // Keyboard navigation for tabs
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab' && e.shiftKey) {
+                // Handle tab navigation
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set focus to main content if skip link was used
+            if (window.location.hash === '#main-content') {
+                document.getElementById('main-content').focus();
+            }
+            
+            // Initialize form validation
+            const form = document.getElementById('predictionForm');
+            form.addEventListener('reset', function() {
+                setTimeout(() => {
+                    announceToScreenReader('Form reset to default values');
+                }, 100);
+            });
+        });
+
+        function resetButton() {
+            // document.getElementById('predictionForm').reset();
+            // announceToScreenReader('Form reset to default values');
+            // alarm("Hello World");
+            document.getElementById("DiabetesPedigreeFunction").value = 0;
+            document.getElementById("Age").value = 0;
+            document.getElementById("Pregnancies").value = 0;
+            document.getElementById("Glucose").value = 0;
+            document.getElementById("BloodPressure").value = 0;
+            document.getElementById("SkinThickness").value = 0;
+            document.getElementById("Insulin").value = 0;
+            document.getElementById("BMI").value = 0.0;
+            document.getElementById('predictionForm').dispatchEvent(new Event('reset'));
+            announceToScreenReader('Form reset to default values');
+        }
+    </script>
+</body>
+</html>
