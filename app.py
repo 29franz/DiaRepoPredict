@@ -275,11 +275,12 @@ def features():
 
 if __name__ == '__main__':
     if model is None or scaler is None:
-        print("⚠️  WARNING: Model or scaler not loaded properly!")
-        print("   Make sure the .pkl files are in the correct directory.")
+        print("WARNING: Model or scaler not loaded properly!")
+        print("Make sure the .pkl files are in the correct directory.")
     else:
-        print("🚀 Application ready!")
-        print(f"   Model: {'Loaded' if model else 'Not loaded'}")
-        print(f"   Scaler: {'Loaded' if scaler else 'Not loaded'}")
+        print("Application ready!")
+        print(f"Model: {'Loaded' if model else 'Not loaded'}")
+        print(f"Scaler: {'Loaded' if scaler else 'Not loaded'}")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+
+    # app.run(debug=True, host='0.0.0.0', port=5000)
